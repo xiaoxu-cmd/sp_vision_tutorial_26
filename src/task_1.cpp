@@ -18,6 +18,7 @@ const std::string keys =
 
 using namespace std::chrono_literals;
 
+//读取命令参数行
 int main(int argc, char * argv[])
 {
   cv::CommandLineParser cli(argc, argv, keys);
@@ -42,9 +43,19 @@ int main(int argc, char * argv[])
   cv::Mat img;
   Eigen::Quaterniond q;
   std::chrono::steady_clock::time_point t;
-
+  std::chrono::steady_clock::time_point last_t= std::chrono::steady_clock::now();
   while (!exiter.exit()) {
     // Your code start
+    //读取一帧照片和四元数
+    camera.read(img,t);
+    auto dt = tools::delta_time(t,last_t);
+    auto q= gimbal.q(t);
+    tools::draw_points(img,armor.points,cv::Scalar(255,0,0),16);
+    //自瞄实现
+    solver.set_R_gimbal2world(q);
+    auto armors=yolo.detect(img);
+    Eigen::Vector3d ypr = tools::eulers(solver.R_gimbal2world(), 2, 1, 0);
+    
 
 
     // Your code end
